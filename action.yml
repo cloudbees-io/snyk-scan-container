@@ -1,0 +1,39 @@
+apiVersion: automation.cloudbees.io/v1alpha1
+kind: action
+name: snyk-container
+inputs:
+  orgname:
+    required: true
+  token:
+    required: true
+  image-location:
+    required: true
+  image-tag:
+    required: true
+runs:
+  using: composite
+  steps:
+    - id: snyk-container
+      name: snyk container
+      uses: docker://registry.saas-dev.beescloud.com/staging/compliance-snykcontainer:main-aebe7d74ba2ccb88b7e65f7b17fef435e9880a8a
+      shell: bash
+      env:
+        CONFIG_JSON: '{\"metaInfo\":{\"url\":\"NA\",\"username\":\"${{ inputs.orgname }}\",\"password\":\"NA\",\"client_secret\":\"${{ inputs.token }}\",\"toolName\":\"snykcontainer\"},\"orchestratorInfo\":{\"assetType\":\"BINARY\",\"assetIdentifier\":\"${{ inputs.image-location }}\",\"profileIdentifier\":\"${{ inputs.image-tag }}\",\"sourceType\":\"SAAS\"},\"metaInformation\":{\"actor\":\"NA\",\"commit_id\":\"NA\",\"tenent_info\":\"NA\",\"scanner_type\":\"Container\"}}'
+        RUN_ID: ${{ cloudbees.run_id }}
+        JOB_ID: ${{ job.id }}
+        STEP_ID: ${{ step.internal.id }}
+        DNS_URL: ${{ cloudbees.api.url }}
+        JWT_TOKEN: ${{ cloudbees.api.token }}
+        BINARY_IMAGE_NAME: "snykcontainer_binary_asset.tar"
+      run: |
+        set -x
+        echo "RUN ID: ${{ cloudbees.run_id }}"
+        echo "Job ID: ${{ job.id }}"
+        echo "Step ID: ${{ step.internal.id }}"
+        cd /
+        if [ -f $CLOUDBEES_WORKSPACE/$BINARY_IMAGE_NAME ]; then
+          rm $CLOUDBEES_WORKSPACE/$BINARY_IMAGE_NAME
+        fi
+        crane flatten ${{ inputs.image-location }}:${{ inputs.image-tag }}
+        skopeo copy docker://${{ inputs.image-location }}:${{ inputs.image-tag }} docker-archive:$CLOUDBEES_WORKSPACE/$BINARY_IMAGE_NAME:${{ inputs.image-location }}:${{ inputs.image-tag }}
+        /bin/bash -c "java -jar ./executables/snyk-container-analyzer.jar & while ! nc -z localhost 5001; do sleep 1; done && ./executables/orchestrator -scanConfig \"${CONFIG_JSON}\" execute-analyser && exit"
