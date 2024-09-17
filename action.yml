@@ -30,8 +30,8 @@ runs:
           
     - id: snyk-container
       name: snyk container
-      uses: docker://public.ecr.aws/l7o7z1g8/actions/snyk-container-actions:main-c470bde71e3cb069ba086be8eebd5378d3a29da3
-      # uses: docker://020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/snyk-container-actions:CBP-4473-d6cc03cc955d2d24a09f43069bd5730559bf8250
+      # uses: docker://public.ecr.aws/l7o7z1g8/actions/snyk-container-actions:main-c470bde71e3cb069ba086be8eebd5378d3a29da3
+      uses: docker://020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/snyk-container-actions:CBP-4473-d6cc03cc955d2d24a09f43069bd5730559bf8250
       shell: bash
       env:
         CONFIG_JSON: '{\"metaInfo\":{\"url\":\"NA\",\"username\":\"${{ inputs.orgname }}\",\"password\":\"NA\",\"client_secret\":\"${{ inputs.token }}\",\"toolName\":\"snykcontainer\"},\"orchestratorInfo\":{\"assetType\":\"BINARY\",\"assetIdentifier\":\"${{ inputs.image-location }}\",\"profileIdentifier\":\"${{ inputs.image-tag }}\",\"sourceType\":\"SAAS\"},\"metaInformation\":{\"actor\":\"NA\",\"commit_id\":\"NA\",\"tenent_info\":\"NA\",\"scanner_type\":\"Container\"}}'
