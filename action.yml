@@ -34,5 +34,5 @@ runs:
         if [ -f $CLOUDBEES_WORKSPACE/$BINARY_IMAGE_NAME ]; then
           rm $CLOUDBEES_WORKSPACE/$BINARY_IMAGE_NAME
         fi
-        skopeo copy docker://${{ inputs.image-location }}:${{ inputs.image-tag }} docker-archive:$CLOUDBEES_WORKSPACE/$BINARY_IMAGE_NAME:${{ inputs.image-location }}:${{ inputs.image-tag }} --dest-oci-accept-uncompressed-layers
+        skopeo copy --insecure-policy docker://${{ inputs.image-location }}:${{ inputs.image-tag }} docker-archive:$CLOUDBEES_WORKSPACE/$BINARY_IMAGE_NAME:${{ inputs.image-location }}:${{ inputs.image-tag }} --dest-oci-accept-uncompressed-layers
         /bin/bash -c "java -jar ./executables/snyk-container-analyzer.jar & while ! nc -z localhost 5001; do sleep 1; done && ./executables/orchestrator -scanConfig \"${CONFIG_JSON}\" execute-analyser && exit"
