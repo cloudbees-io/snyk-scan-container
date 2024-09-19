@@ -13,9 +13,24 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: skopeo
+      uses: docker://public.ecr.aws/logistics/quay.io/skopeo/stable:v1.10
+      shell: bash
+      env:
+       BINARY_IMAGE_NAME: "snykcontainer_binary_asset.tar"
+      run: | 
+        set -x
+        skopeo -v
+        cd /
+        if [ -f $CLOUDBEES_WORKSPACE/$BINARY_IMAGE_NAME ]; then
+             rm $CLOUDBEES_WORKSPACE/$BINARY_IMAGE_NAME
+        fi
+        skopeo copy --insecure-policy docker://${{ inputs.image-location }}:${{ inputs.image-tag }} docker-archive:$CLOUDBEES_WORKSPACE/$BINARY_IMAGE_NAME:${{ inputs.image-location }}:${{ inputs.image-tag }} --dest-oci-accept-uncompressed-layers
+        ls -ltr $CLOUDBEES_WORKSPACE
+        
     - id: snyk-container
       name: snyk container
-      uses: docker://public.ecr.aws/l7o7z1g8/actions/snyk-container-actions:main-c470bde71e3cb069ba086be8eebd5378d3a29da3
+      uses: docker://public.ecr.aws/l7o7z1g8/actions/snyk-container-actions:main-925276c98fb76a515a8aaab34833604cc3e3485a
       shell: bash
       env:
         CONFIG_JSON: '{\"metaInfo\":{\"url\":\"NA\",\"username\":\"${{ inputs.orgname }}\",\"password\":\"NA\",\"client_secret\":\"${{ inputs.token }}\",\"toolName\":\"snykcontainer\"},\"orchestratorInfo\":{\"assetType\":\"BINARY\",\"assetIdentifier\":\"${{ inputs.image-location }}\",\"profileIdentifier\":\"${{ inputs.image-tag }}\",\"sourceType\":\"SAAS\"},\"metaInformation\":{\"actor\":\"NA\",\"commit_id\":\"NA\",\"tenent_info\":\"NA\",\"scanner_type\":\"Container\"}}'
@@ -24,15 +39,11 @@ runs:
         STEP_ID: ${{ step.internal.id }}
         DNS_URL: ${{ cloudbees.api.url }}
         JWT_TOKEN: ${{ cloudbees.api.token }}
-        BINARY_IMAGE_NAME: "snykcontainer_binary_asset.tar"
       run: |
         set -x
         echo "RUN ID: ${{ cloudbees.run_id }}"
         echo "Job ID: ${{ job.id }}"
         echo "Step ID: ${{ step.internal.id }}"
         cd /
-        if [ -f $CLOUDBEES_WORKSPACE/$BINARY_IMAGE_NAME ]; then
-          rm $CLOUDBEES_WORKSPACE/$BINARY_IMAGE_NAME
-        fi
-        skopeo copy docker://${{ inputs.image-location }}:${{ inputs.image-tag }} docker-archive:$CLOUDBEES_WORKSPACE/$BINARY_IMAGE_NAME:${{ inputs.image-location }}:${{ inputs.image-tag }} --dest-oci-accept-uncompressed-layers
+    
         /bin/bash -c "java -jar ./executables/snyk-container-analyzer.jar & while ! nc -z localhost 5001; do sleep 1; done && ./executables/orchestrator -scanConfig \"${CONFIG_JSON}\" execute-analyser && exit"
