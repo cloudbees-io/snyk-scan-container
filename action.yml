@@ -30,7 +30,8 @@ runs:
         
     - id: snyk-container
       name: snyk container
-      uses: docker://public.ecr.aws/l7o7z1g8/actions/snyk-container-actions:main-5d86349c7dfdc9b6e60c9ac369fbfde596a2c4b1
+      # latest image
+      uses: docker://public.ecr.aws/l7o7z1g8/actions/snyk-container-actions:main-3db94dd7a6b4c6a5720476b26fd608519a15a0cc
       shell: bash
       env:
         CONFIG_JSON: '{\"metaInfo\":{\"url\":\"NA\",\"username\":\"${{ inputs.orgname }}\",\"password\":\"NA\",\"client_secret\":\"${{ inputs.token }}\",\"toolName\":\"snykcontainer\"},\"orchestratorInfo\":{\"assetType\":\"BINARY\",\"assetIdentifier\":\"${{ inputs.image-location }}\",\"profileIdentifier\":\"${{ inputs.image-tag }}\",\"sourceType\":\"SAAS\"},\"metaInformation\":{\"actor\":\"NA\",\"commit_id\":\"NA\",\"tenent_info\":\"NA\",\"scanner_type\":\"Container\"}}'
