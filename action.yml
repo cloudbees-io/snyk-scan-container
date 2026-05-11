@@ -14,7 +14,7 @@ runs:
   using: composite
   steps:
     - name: skopeo
-      uses: docker://public.ecr.aws/logistics/quay.io/skopeo/stable:v1.10
+      uses: docker://public.ecr.aws/logistics/quay.io/skopeo/stable:main-00d421c30205e45ecc16c4a9035e26508aeca7ee
       shell: bash
       env:
        BINARY_IMAGE_NAME: "snykcontainer_binary_asset.tar"
